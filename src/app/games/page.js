@@ -28,6 +28,33 @@ export default function GamesPage() {
     }
   }
 
+  const handleDeleteGame = async (e, gameId, roomCode) => {
+    e.stopPropagation() // Prevent card click
+
+    if (!confirm(`Yakin ingin menghapus Game #${roomCode}?\n\nSemua data terkait game ini akan dihapus permanen:\n- Semua players\n- Semua votes\n- Semua night actions\n- Semua information\n- Semua game events`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/games/${gameId}/delete`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        alert(`✅ Game #${roomCode} berhasil dihapus`)
+        // Refresh games list
+        fetchGames()
+      } else {
+        throw new Error(data.error || 'Gagal menghapus game')
+      }
+    } catch (error) {
+      console.error('Error deleting game:', error)
+      alert(`❌ ${error.message}`)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -139,14 +166,25 @@ export default function GamesPage() {
                   </div>
                 </div>
 
-                <div className={`px-3 py-1 rounded text-xs font-semibold inline-block ${
-                  game.status === 'setup' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-700' :
-                  game.status === 'in-progress' ? 'bg-green-900/30 text-green-400 border border-green-700' :
-                  'bg-gray-800 text-gray-400 border border-gray-700'
-                }`}>
-                  {game.status === 'setup' ? '⏳ Setup' :
-                   game.status === 'in-progress' ? '▶️ Berlangsung' :
-                   '✓ Selesai'}
+                <div className="flex items-center justify-between">
+                  <div className={`px-3 py-1 rounded text-xs font-semibold inline-block ${
+                    game.status === 'setup' ? 'bg-yellow-900/30 text-yellow-400 border border-yellow-700' :
+                    game.status === 'in-progress' ? 'bg-green-900/30 text-green-400 border border-green-700' :
+                    'bg-gray-800 text-gray-400 border border-gray-700'
+                  }`}>
+                    {game.status === 'setup' ? '⏳ Setup' :
+                     game.status === 'in-progress' ? '▶️ Berlangsung' :
+                     '✓ Selesai'}
+                  </div>
+
+                  {/* Delete Button */}
+                  <button
+                    onClick={(e) => handleDeleteGame(e, game.id, game.roomCode)}
+                    className="px-3 py-1 bg-red-900/30 hover:bg-red-900/50 border border-red-700 hover:border-red-600 rounded text-xs font-semibold text-red-400 hover:text-red-300 transition-all"
+                    title="Hapus game ini"
+                  >
+                    🗑️ Hapus
+                  </button>
                 </div>
               </div>
             ))}
