@@ -1,0 +1,400 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --blood-red: #8b0000;
+  --townsfolk-blue: #4169e1;
+  --outsider-lightblue: #4682b4;
+  --minion-orange: #ff4500;
+  --demon-red: #dc143c;
+}
+
+body {
+  @apply bg-gray-900 text-gray-100;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blood hover:bg-red-800 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-700;
+  }
+
+  .character-token {
+    @apply relative w-20 h-20 rounded-full border-4 overflow-hidden cursor-pointer transition-transform hover:scale-110;
+  }
+
+  .character-token.townsfolk {
+    @apply border-townsfolk;
+  }
+
+  .character-token.outsider {
+    @apply border-outsider;
+  }
+
+  .character-token.minion {
+    @apply border-minion;
+  }
+
+  .character-token.demon {
+    @apply border-demon;
+  }
+
+  .phase-indicator {
+    @apply text-center py-4 bg-gray-800 rounded-t-lg border-b-4;
+  }
+
+  .phase-indicator.night {
+    @apply border-purple-600 bg-gray-900;
+  }
+
+  .phase-indicator.day {
+    @apply border-yellow-500 bg-blue-900;
+  }
+
+  .eye-btn {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .eye-btn.closed svg {
+    @apply opacity-50;
+  }
+
+  .vote-btn {
+    @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200;
+  }
+
+  .vote-btn.yes {
+    @apply bg-green-600 hover:bg-green-700;
+  }
+
+  .vote-btn.no {
+    @apply bg-red-600 hover:bg-red-700;
+  }
+
+  .vote-btn.abstain {
+    @apply bg-gray-600 hover:bg-gray-700;
+  }
+
+  .vote-btn.locked {
+    @apply ring-4 ring-yellow-400;
+  }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .character-token {
+    @apply w-16 h-16;
+  }
+
+  .btn-primary {
+    @apply py-2 px-4 text-sm;
+  }
+
+  .card {
+    @apply p-4;
+  }
+
+  /* Touch-friendly button sizes */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--blood-red);
+  outline-offset: 2px;
+}
+
+/* ===== DYNAMIC BACKGROUNDS ===== */
+.bg-night {
+  background-image: url('https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=2000');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.bg-night::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(26, 26, 46, 0.85) 0%, rgba(15, 15, 30, 0.90) 50%, rgba(22, 33, 62, 0.85) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bg-night::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.06) 2px, transparent 2px);
+  background-size: 200px 200px, 300px 300px, 250px 250px;
+  pointer-events: none;
+  opacity: 0.3;
+  animation: twinkle 3s ease-in-out infinite;
+  z-index: 2;
+}
+
+.bg-day {
+  background-image: url('https://images.unsplash.com/photo-1504198266287-1659872e6590?q=80&w=2000');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.bg-day::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.4) 0%, rgba(101, 67, 33, 0.5) 50%, rgba(139, 90, 43, 0.4) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bg-day::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(circle at 50% 20%, rgba(255, 200, 100, 0.15) 0%, transparent 50%);
+  pointer-events: none;
+  animation: sun-glow 4s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Text color overrides for day phase */
+.bg-day .card {
+  background: rgba(30, 20, 10, 0.85);
+  border-color: rgba(139, 90, 43, 0.8);
+}
+
+.bg-day h1,
+.bg-day h2,
+.bg-day h3,
+.bg-day p,
+.bg-day span,
+.bg-day li {
+  color: #f5f5f5;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes sun-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(139, 0, 0, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(139, 0, 0, 0.8), 0 0 30px rgba(139, 0, 0, 0.6); }
+}
+
+/* ===== ANIMATION UTILITY CLASSES ===== */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-in;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* ===== INTERACTIVE BUTTON EFFECTS ===== */
+.btn-primary, .btn-secondary {
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(139, 0, 0, 0.4);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 5px 10px rgba(139, 0, 0, 0.3);
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+/* ===== CARD HOVER EFFECTS ===== */
+.card-interactive {
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  border-color: var(--blood-red);
+}
+
+/* ===== ROLE REVEAL ANIMATION ===== */
+.role-card-enter {
+  animation: slide-up 0.6s ease-out, fade-in 0.6s ease-out;
+}
+
+.role-icon-large {
+  font-size: 4rem;
+  display: inline-block;
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+/* ===== PHASE TRANSITION ===== */
+.phase-transition {
+  animation: fade-in 1s ease-in, slide-up 0.8s ease-out;
+}
+
+/* ===== VOTING ANIMATIONS ===== */
+.vote-btn {
+  transition: all 0.2s ease;
+}
+
+.vote-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.vote-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.vote-btn.locked {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* ===== PLAYER TOKEN ANIMATIONS ===== */
+.character-token:hover {
+  animation: bounce-subtle 0.5s ease-in-out;
+}
+
+/* ===== NOTIFICATION STYLES ===== */
+.notification {
+  animation: slide-up 0.4s ease-out;
+}
+
+.notification.error {
+  animation: shake 0.5s ease-in-out, slide-up 0.4s ease-out;
+}

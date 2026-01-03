@@ -1,0 +1,145 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core Game Table
+model Game {
+  id            String   @id @default(cuid())
+  roomCode      String   @unique
+  script        String   @default("trouble-brewing")
+  status        String   @default("lobby") // lobby, setup, night, day, ended
+  currentPhase  String?  // "night-1", "day-1", "night-2", etc.
+  currentStep   Int      @default(0)
+  dayNumber     Int      @default(0)
+  nightNumber   Int      @default(0)
+  gmId          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  players       Player[]
+  votes         Vote[]
+  information   Information[]
+  gameEvents    GameEvent[]
+  votingSessions VotingSession[]
+  grimoireState GrimoireState?
+}
+
+// Players in a game
+model Player {
+  id              String   @id @default(cuid())
+  gameId          String
+  userId          String?
+  name            String
+  characterId     String?
+  actualRole      String?
+  isAlive         Boolean  @default(true)
+  hasUsedGhostVote Boolean @default(false)
+  seatNumber      Int
+  isGM            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  game            Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  votesReceived   Vote[]   @relation("VotesReceived")
+  votesCast       Vote[]   @relation("VotesCast")
+  information     Information[]
+
+  @@unique([gameId, seatNumber])
+}
+
+// Character definitions (pre-populated for Trouble Brewing)
+model Character {
+  id          String   @id @default(cuid())
+  characterId String   @unique
+  name        String
+  type        String   // "townsfolk", "outsider", "minion", "demon"
+  script      String   @default("trouble-brewing")
+  ability     String   @db.Text
+  firstNight  Int?
+  otherNights Int?
+  setup       String?
+  reminders   Json     @default("[]")
+  imageUrl    String?
+
+  createdAt   DateTime @default(now())
+}
+
+// Voting Sessions (each nomination creates a session)
+model VotingSession {
+  id            String   @id @default(cuid())
+  gameId        String
+  nominatedPlayerId String
+  nominatorPlayerId String
+  dayNumber     Int
+  isOpen        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  closedAt      DateTime?
+
+  game          Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  votes         Vote[]
+}
+
+// Individual Votes
+model Vote {
+  id              String   @id @default(cuid())
+  gameId          String
+  votingSessionId String
+  voterId         String
+  targetId        String
+  value           String   // "yes", "no", "abstain"
+  isLocked        Boolean  @default(false)
+  isGhostVote     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  game            Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  votingSession   VotingSession  @relation(fields: [votingSessionId], references: [id], onDelete: Cascade)
+  voter           Player         @relation("VotesCast", fields: [voterId], references: [id], onDelete: Cascade)
+  target          Player         @relation("VotesReceived", fields: [targetId], references: [id], onDelete: Cascade)
+
+  @@unique([votingSessionId, voterId])
+}
+
+// Information given by GM to players
+model Information {
+  id          String   @id @default(cuid())
+  gameId      String
+  playerId    String
+  phase       String   // "night-1", "day-2", etc.
+  infoType    String   // "character-reveal", "ability-info", "public-announcement"
+  content     String   @db.Text
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+// Game Events Log (for history and debugging)
+model GameEvent {
+  id          String   @id @default(cuid())
+  gameId      String
+  eventType   String   // "phase-change", "player-death", "ability-use", "vote-close"
+  description String   @db.Text
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
+
+// Grimoire State (GM's tracker)
+model GrimoireState {
+  id          String   @id @default(cuid())
+  gameId      String   @unique
+  tokens      Json     @default("[]")
+  reminders   Json     @default("[]")
+  notes       String   @db.Text @default("")
+  updatedAt   DateTime @updatedAt
+
+  game        Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+}
