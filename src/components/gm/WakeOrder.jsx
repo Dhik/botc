@@ -77,9 +77,9 @@ export default function WakeOrder({
       return []
     }
 
-    // Get all unique character IDs from players
+    // Get all unique character IDs from ALIVE players only
     const playerCharacterIds = players
-      .filter(p => p.characterId && !p.isGM)
+      .filter(p => p.characterId && !p.isGM && p.isAlive) // Only show alive players
       .map(p => p.characterId)
 
     // Get character details for these IDs
@@ -123,10 +123,13 @@ export default function WakeOrder({
         </span>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
         {wakeOrderCharacters.map((character, index) => {
           const instruction = getCharacterInstruction(character.characterId)
-          const playersWithChar = players.filter(p => p.characterId === character.characterId)
+          // Only show alive players in wake order
+          const playersWithChar = players.filter(p =>
+            p.characterId === character.characterId && p.isAlive
+          )
 
           return (
             <details
@@ -184,29 +187,38 @@ export default function WakeOrder({
                   {playersWithChar.length > 0 && (
                     <div className="pt-3 border-t border-gray-700">
                       <p className="text-xs text-gray-500 mb-2">Wake Controls:</p>
-                      <div className="space-y-2">
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
                         {playersWithChar.map(player => {
                           const isAwake = awakePlayerIds.includes(player.id)
                           const isWaking = wakingPlayerId === player.id
+                          const isDead = !player.isAlive
 
                           return (
                             <button
                               key={player.id}
                               onClick={() => handleToggleWake(player.id, player.name, isAwake)}
-                              disabled={isWaking}
-                              className={`w-full p-2 rounded-lg border-2 text-left text-sm transition-all disabled:opacity-50 ${
-                                isAwake
+                              disabled={isWaking || isDead}
+                              className={`w-full p-2 rounded-lg border-2 text-left text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                                isDead
+                                  ? 'bg-gray-900 border-gray-700 text-gray-600'
+                                  : isAwake
                                   ? 'bg-green-900/30 border-green-700 text-green-300'
                                   : 'bg-gray-800 border-gray-600 text-gray-400 hover:border-gray-500'
                               }`}
                             >
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="font-medium">{player.name}</p>
-                                  <p className="text-xs opacity-75">Kursi #{player.seatNumber}</p>
+                                  <p className="font-medium">
+                                    {player.name}
+                                    {isDead && ' 💀'}
+                                  </p>
+                                  <p className="text-xs opacity-75">
+                                    Kursi #{player.seatNumber}
+                                    {isDead && ' (Mati)'}
+                                  </p>
                                 </div>
                                 <span className="text-2xl">
-                                  {isWaking ? '⏳' : isAwake ? '👁️' : '😴'}
+                                  {isDead ? '💀' : isWaking ? '⏳' : isAwake ? '👁️' : '😴'}
                                 </span>
                               </div>
                             </button>
